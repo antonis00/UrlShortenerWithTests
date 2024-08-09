@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      SA_PASSWORD: ${PASSWORD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - urlshortener-network
+
+  urlshortener:
+    image: antonis00/url-shortener
+    build: .
+    ports:
+      - "8080:44307"
+    environment:
+      - ASPNETCORE_URLS=https://+:44307
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERTIFICATE_PASSWORD}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/certificate.pfx
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${CONNECTION_STRINGS__DEFAULT_CONNECTION};
+    depends_on:
+      - db
+    networks:
+      - urlshortener-network
+
+networks:
+  urlshortener-network:
